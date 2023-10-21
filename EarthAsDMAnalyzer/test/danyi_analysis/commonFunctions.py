@@ -120,14 +120,14 @@ def drawNormHistDict_CompN(histDict, xtitle, filename, outdir, logy=False, maxy=
     for i, (k, hist) in enumerate(histDict.items()):
         if k.find("gen")>=0:
             leg.AddEntry(hist, "{}: {:.0f}".format(k, integrals[k]))
-    for i, (k, hist) in enumerate(histDict.items()):
-        if k.find("muons")>=0:
-            leg.AddEntry(hist, "muons: {:.0f}".format(integrals[k]))
+    # for i, (k, hist) in enumerate(histDict.items()):
+    #     if k.find("muons")>=0:
+    #         leg.AddEntry(hist, "muons: {:.0f}".format(integrals[k]))
     for i, (k, hist) in enumerate(histDict.items()):
         if k.find("DT")>=0:
             leg.AddEntry(hist, "muons DT avg: {:.0f}".format(integrals[k]))
     for i, (k, hist) in enumerate(histDict.items()):
-        if not k.find("gen")>=0 and not k.find("muons")>=0 and not k.find("DT")>=0:
+        if not k.find("gen")>=0 and not k.find("DT")>=0:
             # leg.AddEntry(hist, k + ": {:.0f}".format(integrals[i]))
             leg.AddEntry(hist, k + ": {:.0f}".format(integrals[k]))
 

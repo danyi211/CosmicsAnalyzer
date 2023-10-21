@@ -34,7 +34,9 @@ def main():
     # load tree and assign process type
     prc = 'sig' if indir.find('91to180') >= 0 else 'bkg'
     tc = TChain(treename)
-    tc.Add(indir)
+    # tc.Add(indir)
+    for file_match in glob.glob(indir + '/*.root'):
+        tc.Add(file_match)
     
     # create hist lists
     pt_list = []
@@ -42,10 +44,10 @@ def main():
     phi_list = []
     energy_list = []
     for i in range(4):
-        pt_list.append(TH1F("pt_gen{}".format(i), "", 100, 0., 5000.))
+        pt_list.append(TH1F("pt_gen{}".format(i), "", 100, 50., 150.))
         eta_list.append(TH1F("eta_gen{}".format(i), "", 50, 0., 3.))
         phi_list.append(TH1F("phi_gen{}".format(i), "", 50, -3.14, 3.14))
-        energy_list.append(TH1F("energy_gen{}".format(i), "", 100, 0., 5000.))
+        energy_list.append(TH1F("energy_gen{}".format(i), "", 100, 50., 150.))
     
     # event loop
     for evt in tc:

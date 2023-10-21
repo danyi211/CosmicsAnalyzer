@@ -31,7 +31,7 @@ def main():
     indir = args.indir
     outdir = args.outdir
     verbose = int(args.verbose)
-    
+    '''
     treeDict = {
         '100GeV_muons_tevMuons'                : TChain(treename),
         '500GeV_muons_tevMuons'                : TChain(treename),
@@ -56,6 +56,36 @@ def main():
         '1000GeV' : TH1F("relDiffRecoGenPt_1000GeV", "",  100, -1., 1.),
         '3-4TeV' : TH1F("relDiffRecoGenPt_3-4TeV", "",  100, -1., 1.),
     }
+    '''
+    # maxE = 1000
+    # energy = '500GeV'
+    # maxE = 2000
+    # energy = '1000GeV'
+    maxE = 5000
+    energy = '3000GeV'
+    treeDict = {
+        # '{}_muons_tevMuons'.format(energy)     : TChain(treename),
+        '{}-10m'.format(energy)                : TChain(treename),
+        '{}-100m'.format(energy)               : TChain(treename),
+        '{}-1000m'.format(energy)              : TChain(treename),
+    }
+    ptHistDict = {
+        # 'gen_{}_muons_tevMuons'.format(energy) : TH1F("genPt_{}-0m".format(energy), "", 100, 0, maxE),
+        'gen_{}-10m'.format(energy) : TH1F("genPt_{}-10m".format(energy), "", 100, 0, maxE),
+        'gen_{}-100m'.format(energy) : TH1F("genPt_{}-100m".format(energy), "", 100, 0, maxE),
+        'gen_{}-1000m'.format(energy) : TH1F("genPt_{}-1000m".format(energy), "", 100, 0, maxE),
+        # '{}_muons_tevMuons'.format(energy) : TH1F("Pt_{}-0m".format(energy), "", 100, 0, maxE),
+        '{}-10m'.format(energy) : TH1F("Pt_{}-10m".format(energy), "", 100, 0, maxE),
+        '{}-100m'.format(energy) : TH1F("Pt_{}-100m".format(energy), "", 100, 0, maxE),
+        '{}-1000m'.format(energy) : TH1F("Pt_{}-100m".format(energy), "", 100, 0, maxE),
+    }
+    relHistDict = {
+        # '{}_muons_tevMuons'.format(energy) : TH1F("relDiffRecoGenPt_{}-0m".format(energy), "", 100,  -1., 1.),
+        '{}-10m'.format(energy) : TH1F("relDiffRecoGenPt_{}-10m".format(energy), "", 100, -1., 1.),
+        '{}-100m'.format(energy) : TH1F("relDiffRecoGenPt_{}-100m".format(energy), "", 100, -1., 1.),
+        '{}-1000m'.format(energy) : TH1F("relDiffRecoGenPt_{}-1000m".format(energy), "", 100, -1., 1.),
+    }
+    
     
     # Load the trees
     for key, tc in treeDict.items():
@@ -63,7 +93,7 @@ def main():
         # for file_match in glob.glob(indir + '/*{}*.root'.format(key)):
         #     tc.Add(file_match)
         # crab ntuples
-        for file_match in glob.glob(indir + '/*{}*/*/*/*.root'.format(key)):
+        for file_match in glob.glob(indir + '/crab_Ntuplizer*{}*/*/*/*.root'.format(key)):
             tc.Add(file_match)
         if key.find('3-4TeV')>=0:
             tc.Add("/home/users/dazhang/works/CMSSW_12_6_5/src/CosmicsAnalyzer/EarthAsDMAnalyzer/test/ntuples/ntuple_MC_RR-91to180Theta-3000to4000GeV_74_muons_tevMuons.root")
@@ -77,26 +107,37 @@ def main():
         muon_match_index = \
                 commonFunctions.recoMuonGenMatch(tc, verbose, method='mindR', drawOpt=True, outdir=outdir, key=key+'_sig')
         
-        energy_key = key.split("_")[0]
-        commonFunctions.vprint( verbose, 3, "energy:~~{}~~".format(energy_key))
+        if key.find("_")>=0:
+            energy_key = key.split("_", 1)[0]
+            depth_key = key.split("_", 1)[1]
+        else:
+            energy_key = key.split("-")[0]
+            depth_key = key.split("-")[1]
+        compare_key = depth_key
+        commonFunctions.vprint( verbose, 3, "energy:~~{}~~, depth:~~{}~~".format(energy_key, depth_key))
                             
         # Fill Reco-Gen pt rel diff
         for hkey in ptHistDict:
-            if energy_key != '' and hkey.find(energy_key)>=0:
+            if compare_key != '' and hkey.find(compare_key)>=0:
                 for ind, evt in enumerate(tc):
                     if muon_match_index[ind] != -1: 
                         if hkey.find('gen')>=0: 
-                            commonFunctions.vprint( verbose, 4, "Filling in gen pt {} hist!!".format(energy_key) )
+                            commonFunctions.vprint( verbose, 4, "Filling in gen pt {} hist!!".format(compare_key) )
                             ptHistDict[hkey].Fill(evt.gen_pt[1])
                         else: 
-                            commonFunctions.vprint( verbose, 4, "Filling in matched pt {} hist!!".format(energy_key) )
+                            commonFunctions.vprint( verbose, 4, "Filling in matched pt {} hist!!".format(compare_key) )
                             ptHistDict[hkey].Fill(evt.muon_fromGenTrack_Pt[muon_match_index[ind]])
                             relDiff = (evt.muon_fromGenTrack_Pt[muon_match_index[ind]] - evt.gen_pt[1]) / evt.gen_pt[1]
-                            relHistDict[hkey].Fill(relDiff)
+                            if hkey in relHistDict:
+                                relHistDict[hkey].Fill(relDiff)
             
-    commonFunctions.drawNormHistDict_CompN(ptHistDict, "p_{T}", "pt_compareE_match_sig", outdir, logy=True, maxy=1e1, compN=4)
+    # commonFunctions.drawNormHistDict_CompN(ptHistDict, "p_{T}", "pt_compareE_match_sig", outdir, logy=True, maxy=1e1, compN=4)
+    # commonFunctions.drawNormHistDict(relHistDict, "(Reco p_{T} #minus Gen p_{T}) / Gen p_{T}",\
+                                                        #   "resPt_compareE_match_sig", outdir, maxy=0.4)
+    
+    commonFunctions.drawNormHistDict_CompN(ptHistDict, "p_{T}", "pt_compare_depth_match_sig_{}".format(energy), outdir, logy=True, maxy=1e2, compN=3)
     commonFunctions.drawNormHistDict(relHistDict, "(Reco p_{T} #minus Gen p_{T}) / Gen p_{T}",\
-                                                          "resPt_compareE_match_sig", outdir, maxy=0.4)
+                                                          "resPt_compare_depth_match_sig_{}".format(energy), outdir, maxy=0.4)
 
     # Fit to gaussian
     # fit_mean_dict = {}

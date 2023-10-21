@@ -767,6 +767,7 @@ void EarthAsDMAnalyzer::beginJob() {
   outputTree_ -> Branch ( "gen_eta",          &gen_eta_);
   outputTree_ -> Branch ( "gen_phi",          &gen_phi_);
   outputTree_ -> Branch ( "gen_mass",         &gen_mass_);
+  outputTree_ -> Branch ( "gen_energy",         &gen_energy_);
   outputTree_ -> Branch ( "gen_vx",           &gen_vx_);
   outputTree_ -> Branch ( "gen_vy",           &gen_vy_);
   outputTree_ -> Branch ( "gen_vz",           &gen_vz_);
